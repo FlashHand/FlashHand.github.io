@@ -1,0 +1,457 @@
+
+ <!DOCTYPE HTML>
+<html lang="default">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>iOS地图坐标纠偏:WGS84 TO GCJ02 | R4L-Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="R4L">
+    
+
+    
+    <meta name="description" content="LBSBuff能够将wgs84坐标系（GOOGLE MAP）的坐标转换为GCJ02坐标系的坐标。 算法来源： http://emq.googlecode.com/svn/emq/src/Algorithm/Coords/Converter.java OC实现： LBSBuff.h#import &amp;lt;Foundation/Foundation.h&amp;gt;#import &amp;lt;CoreLocat">
+<meta name="keywords" content="Objective-C,iOS组件,BuffKit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS地图坐标纠偏:WGS84 TO GCJ02">
+<meta property="og:url" content="http://r4l.xyz/2013/08/10/LBSBuff/index.html">
+<meta property="og:site_name" content="R4L-Blog">
+<meta property="og:description" content="LBSBuff能够将wgs84坐标系（GOOGLE MAP）的坐标转换为GCJ02坐标系的坐标。 算法来源： http://emq.googlecode.com/svn/emq/src/Algorithm/Coords/Converter.java OC实现： LBSBuff.h#import &amp;lt;Foundation/Foundation.h&amp;gt;#import &amp;lt;CoreLocat">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-04-10T12:06:52.896Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS地图坐标纠偏:WGS84 TO GCJ02">
+<meta name="twitter:description" content="LBSBuff能够将wgs84坐标系（GOOGLE MAP）的坐标转换为GCJ02坐标系的坐标。 算法来源： http://emq.googlecode.com/svn/emq/src/Algorithm/Coords/Converter.java OC实现： LBSBuff.h#import &amp;lt;Foundation/Foundation.h&amp;gt;#import &amp;lt;CoreLocat">
+
+    
+    <link rel="alternative" href="/atom.xml" title="R4L-Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon1.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="R4L-Blog" title="R4L-Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="R4L-Blog">R4L-Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/categories">分类</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<!-- <form class="search" action="http://r4l.xyz/" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 5156300261909359000 ><input type="text" name="q" size="30" placeholder="Search"><br>
+						</form> -->
+						<script type="text/javascript">(function(){document.write(unescape('%3Cdiv id="bdcs"%3E%3C/div%3E'));var bdcs = document.createElement('script');bdcs.type = 'text/javascript';bdcs.async = true;bdcs.src = 'http://znsv.baidu.com/customer_search/api/js?sid=5156300261909358396' + '&plate_url=' + encodeURIComponent(window.location.href) + '&t=' + Math.ceil(new Date()/3600000);var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(bdcs, s);})();</script>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2013/08/10/LBSBuff/" title="iOS地图坐标纠偏:WGS84 TO GCJ02" itemprop="url">iOS地图坐标纠偏:WGS84 TO GCJ02</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="R4L" target="_blank" itemprop="author">R4L</a>
+		
+  <p class="article-time">
+    <time datetime="2013-08-10T11:46:22.000Z" itemprop="datePublished"> Published 2013-08-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<p>LBSBuff能够将wgs84坐标系（GOOGLE MAP）的坐标转换为GCJ02坐标系的坐标。</p>
+<p>算法来源：</p>
+<p><a href="http://emq.googlecode.com/svn/emq/src/Algorithm/Coords/Converter.java" target="_blank" rel="noopener">http://emq.googlecode.com/svn/emq/src/Algorithm/Coords/Converter.java</a></p>
+<p>OC实现：</p>
+<p>LBSBuff.h<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line">#import &lt;CoreLocation/CLLocation.h&gt;</span><br><span class="line">CLLocationCoordinate2D bfLBSWgsToMars(CLLocationCoordinate2D wgsLoc);</span><br><span class="line">CLLocationCoordinate2D bfLBSWgsToMars2(double lon,double lat);</span><br><span class="line"></span><br><span class="line">@interface LBSBuff : NSObject</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>LBSBuff.m<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#import &quot;LBSBuff.h&quot;</span><br><span class="line">CLLocationCoordinate2D bfLBSWgsToMars(CLLocationCoordinate2D wgsLoc)</span><br><span class="line">&#123;</span><br><span class="line">    CLLocationCoordinate2D marsLoc;</span><br><span class="line">    //算法仅适用于中国地区，经过自己的LBS应用实际测试与长时间应用，转换精确度基本保证到小数点后4位。</span><br><span class="line">    if (wgsLoc.longitude&lt;137.8347&amp;&amp;wgsLoc.longitude&gt;72.004&amp;&amp;wgsLoc.latitude&gt;0.8293&amp;&amp;wgsLoc.latitude&lt;55.8271) &#123;</span><br><span class="line">        //固定参数设置</span><br><span class="line">        double kPI=3.14159265358979324;//17位小数</span><br><span class="line">        double kA=6378245.0; //Krasovsky常数</span><br><span class="line">        double kE=0.00669342162296594323; //20位小数</span><br><span class="line">        double kD=0.66666666666666666667;//20位小数</span><br><span class="line"></span><br><span class="line">        double x=wgsLoc.longitude-105;</span><br><span class="line">        double y=wgsLoc.latitude-35;</span><br><span class="line">        //获取经度偏移量的参考值</span><br><span class="line">        double f=300+x+0.2*y+0.1*x*x+0.1*x*y+0.1*sqrt(fabs(x));</span><br><span class="line">        f+=(20*sin(6*kPI*x)+20*sin(2.0*kPI*x))*kD;</span><br><span class="line">        f+=(20*sin(kPI*x)+40*sin(x/3*kPI))*kD;</span><br><span class="line">        f+=(150*sin(x/12*kPI)+300*sin(x/30*kPI))*kD;</span><br><span class="line">        //获取纬度偏移量的参考值</span><br><span class="line">        double r=-100.0 + 2.0 * x + 3.0 * y + 0.2*y*y + 0.1 * x * y + 0.2 * sqrt(fabs(x));</span><br><span class="line">        r+=(20*sin(6*x*kPI)+20*sin(2.0*x*kPI))*kD;</span><br><span class="line">        r+=(20*sin(kPI*y)+40*sin(y/3.0*kPI))*kD;</span><br><span class="line">        r+=(160*sin(y/12*kPI)+320*sin(y*kPI/30))*kD;</span><br><span class="line">        double ret=wgsLoc.latitude/180*kPI;</span><br><span class="line">        double magic=sin(ret);</span><br><span class="line">        magic=1-kE*magic*magic;</span><br><span class="line">        double sqrtmagic=sqrt(magic);</span><br><span class="line">        double dlon=(f*180)/(kA/sqrtmagic*cos(ret)*kPI);</span><br><span class="line">        double dlat=(r*180)/((kA*(1-kE))/(magic*sqrtmagic)*kPI);</span><br><span class="line">        //进行偏移</span><br><span class="line">        marsLoc.longitude=wgsLoc.longitude+dlon;</span><br><span class="line">        marsLoc.latitude=wgsLoc.latitude+dlat;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        marsLoc=wgsLoc;</span><br><span class="line">    &#125;</span><br><span class="line">    return marsLoc;</span><br><span class="line">&#125;</span><br><span class="line">CLLocationCoordinate2D bfLBSWgsToMars2(double lon,double lat)</span><br><span class="line">&#123;</span><br><span class="line">    CLLocationCoordinate2D wgsLoc=&#123;lat,lon&#125;;</span><br><span class="line">    return bfLBSWgsToMars(wgsLoc);</span><br><span class="line">&#125;</span><br><span class="line">@implementation LBSBuff</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/iOS组件BuffKit/">iOS组件BuffKit</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Objective-C/">Objective-C</a><a href="/tags/iOS组件/">iOS组件</a><a href="/tags/BuffKit/">BuffKit</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script>
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>
+
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/30/WKWebView-JSPatch注入原生代码/" title="WKWebView + JSPatch注入代码,实现H5与原生页面的灵活交互">
+  <strong>上一篇：</strong><br/>
+  <span>
+  WKWebView + JSPatch注入代码,实现H5与原生页面的灵活交互</span>
+</a>
+</div>
+
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2013/08/10/LBSBuff/" data-title="iOS地图坐标纠偏:WGS84 TO GCJ02" data-url="http://r4l.xyz/2013/08/10/LBSBuff/"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/iOS开发/" title="iOS开发">iOS开发<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/iOS组件BuffKit/" title="iOS组件BuffKit">iOS组件BuffKit<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Objective-C/" title="Objective-C">Objective-C<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/iOS组件/" title="iOS组件">iOS组件<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BuffKit/" title="BuffKit">BuffKit<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JSPatch/" title="JSPatch">JSPatch<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/FlashHand" target="_blank" title="My github">My github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jianshu.com/users/3b98399e38d9/latest_articles" target="_blank" title="我的简书">我的简书</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> No need to retreat.YOLO:) <br/>
+			</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/FlashHand" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
+		
+		<a href="/about" target="_blank" title="R4L">R4L</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize();
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+      
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"r4l"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+});
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

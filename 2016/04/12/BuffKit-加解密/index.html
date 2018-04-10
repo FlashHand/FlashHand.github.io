@@ -1,0 +1,479 @@
+
+ <!DOCTYPE HTML>
+<html lang="default">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>iOS加解密工具(AES,DES,3DES,BLOWFISH) | R4L-Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="R4L">
+    
+
+    
+    <meta name="description" content="加解密工具CryptoBuff包含了： 对NSData的AES,DES,3DES,BLOWFISH加密解密方法。 以及对NSData和NSString的MD5，SHA1,SHA2的计算。 BuffKit源码及Demo地址： https://github.com/FlashHand/BuffKit 以Blowfish加解密为例子：NSString *sourceStr=@&amp;quot;12345678">
+<meta name="keywords" content="Objective-C,iOS组件,BuffKit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS加解密工具(AES,DES,3DES,BLOWFISH)">
+<meta property="og:url" content="http://r4l.xyz/2016/04/12/BuffKit-加解密/index.html">
+<meta property="og:site_name" content="R4L-Blog">
+<meta property="og:description" content="加解密工具CryptoBuff包含了： 对NSData的AES,DES,3DES,BLOWFISH加密解密方法。 以及对NSData和NSString的MD5，SHA1,SHA2的计算。 BuffKit源码及Demo地址： https://github.com/FlashHand/BuffKit 以Blowfish加解密为例子：NSString *sourceStr=@&amp;quot;12345678">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-04-10T12:06:52.896Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS加解密工具(AES,DES,3DES,BLOWFISH)">
+<meta name="twitter:description" content="加解密工具CryptoBuff包含了： 对NSData的AES,DES,3DES,BLOWFISH加密解密方法。 以及对NSData和NSString的MD5，SHA1,SHA2的计算。 BuffKit源码及Demo地址： https://github.com/FlashHand/BuffKit 以Blowfish加解密为例子：NSString *sourceStr=@&amp;quot;12345678">
+
+    
+    <link rel="alternative" href="/atom.xml" title="R4L-Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon1.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="R4L-Blog" title="R4L-Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="R4L-Blog">R4L-Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/categories">分类</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<!-- <form class="search" action="http://r4l.xyz/" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 5156300261909359000 ><input type="text" name="q" size="30" placeholder="Search"><br>
+						</form> -->
+						<script type="text/javascript">(function(){document.write(unescape('%3Cdiv id="bdcs"%3E%3C/div%3E'));var bdcs = document.createElement('script');bdcs.type = 'text/javascript';bdcs.async = true;bdcs.src = 'http://znsv.baidu.com/customer_search/api/js?sid=5156300261909358396' + '&plate_url=' + encodeURIComponent(window.location.href) + '&t=' + Math.ceil(new Date()/3600000);var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(bdcs, s);})();</script>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/12/BuffKit-加解密/" title="iOS加解密工具(AES,DES,3DES,BLOWFISH)" itemprop="url">iOS加解密工具(AES,DES,3DES,BLOWFISH)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="R4L" target="_blank" itemprop="author">R4L</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-12T11:46:22.000Z" itemprop="datePublished"> Published 2016-04-12</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#参数说明"><span class="toc-number">1.</span> <span class="toc-text">参数说明:</span></a></li></ol>
+		
+		</div>
+		
+		<p>加解密工具CryptoBuff包含了：</p>
+<p>对NSData的AES,DES,3DES,BLOWFISH加密解密方法。</p>
+<p>以及对NSData和NSString的MD5，SHA1,SHA2的计算。</p>
+<p>BuffKit源码及Demo地址：</p>
+<p><a href="https://github.com/FlashHand/BuffKit" target="_blank" rel="noopener">https://github.com/FlashHand/BuffKit</a></p>
+<p>以Blowfish加解密为例子：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">NSString *sourceStr=@&quot;12345678901234561&quot;;</span><br><span class="line">NSData *source=[sourceStr dataUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">[source bfCryptoBlowFishEncodeWithMode:BuffCryptoModeCFB padding:YES iv:@&quot;1234567890&quot; key:@&quot;1234567890&quot; completion:^(NSData *cryptoData) &#123;</span><br><span class="line">       [cryptoData bfCryptoBlowFishDecodeWithMode:BuffCryptoModeCFB padding:NO iv:@&quot;1234567890&quot; key:@&quot;1234567890&quot; completion:^(NSData *cryptoData2) &#123;</span><br><span class="line">           NSString *result = [[NSString alloc] initWithData: cryptoData2 encoding: NSUTF8StringEncoding];</span><br><span class="line">           NSLog(@&quot;%@&quot;,result);</span><br><span class="line">       &#125;];</span><br><span class="line">   &#125;];</span><br></pre></td></tr></table></figure></p>
+<p>上面包含了encode和decode过程。<br><br>打印结果为：12345678901234561</p>
+<h4 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明:"></a>参数说明:</h4><p><strong>BuffCryptoMode</strong> 为加密模式，支持的加密模式有<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">typedef NS_ENUM(NSInteger, BuffCryptoMode) &#123;</span><br><span class="line">    BuffCryptoModeECB		= 1,//kCCModeECB</span><br><span class="line">    BuffCryptoModeCBC		= 2,//kCCModeCBC</span><br><span class="line">    BuffCryptoModeCFB		= 3,//kCCModeCFB</span><br><span class="line">    BuffCryptoModeCTR		= 4,//kCCModeCTR</span><br><span class="line">    BuffCryptoModeOFB		= 7,//kCCModeOFB</span><br><span class="line">    BuffCryptoModeCFB8		= 10,//kCCModeCFB8</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p><strong>isPadding</strong> 表示是否填充，YES为添加填充，注意在ECB和CBC模式下，padding必须为NO。<br><br><strong>iv</strong> 为初始化偏移量（initialization vector）ECB和CBC下填写会被忽略，</p>
+<p>注意iv的length必须和key的length相同</p>
+<p><strong>key</strong> 是密钥，AES加密时key的长度必须是16，24，32其中一个，</p>
+<p>DES加密时是8，3DES加密时是24，</p>
+<p>blowfish加密时key的长度可以是整数区间[8,56]中的任意一个.</p>
+<p>加密过程是在GLOBAL_QUEUE里执行的，<strong>completion</strong> block是异步回调,</p>
+<p>block传入一个NSData类的参数cryptoData，加密或解密失败时cryptoData=nil.</p>
+<p>注意：加密时，内容的长度若不能对key.length进行整除，则会对内容进行补位，</p>
+<p>否则加密就会失败。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">NSMutableData *sourceM=[[NSMutableData alloc]initWithData:source];</span><br><span class="line">while (sourceM.length % key.length != 0) &#123;</span><br><span class="line">    [sourceM appendData: [@&quot;\0&quot; dataUsingEncoding: NSASCIIStringEncoding]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>加解密和MD5，SHA1,SHA2的计算主要依赖于 <strong>CommonCrypto</strong> 库</p>
+<p>若需要自定义多线程加解密和了解实现方式可以看源码</p>
+<p><a href="https://github.com/FlashHand/BuffKit" target="_blank" rel="noopener">https://github.com/FlashHand/BuffKit</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/iOS组件BuffKit/">iOS组件BuffKit</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Objective-C/">Objective-C</a><a href="/tags/iOS组件/">iOS组件</a><a href="/tags/BuffKit/">BuffKit</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script>
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>
+
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/05/12/FrameBuff/" title="UIView,CALayer,UIImage的尺寸或位置的快捷获取">
+  <strong>上一篇：</strong><br/>
+  <span>
+  UIView,CALayer,UIImage的尺寸或位置的快捷获取</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/04/12/cellbuff/"  title="Cell显示不完整怎么办？为Cell添加一个标注">
+ <strong>下一篇：</strong><br/> 
+ <span>Cell显示不完整怎么办？为Cell添加一个标注
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/04/12/BuffKit-加解密/" data-title="iOS加解密工具(AES,DES,3DES,BLOWFISH)" data-url="http://r4l.xyz/2016/04/12/BuffKit-加解密/"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#参数说明"><span class="toc-number">1.</span> <span class="toc-text">参数说明:</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/iOS开发/" title="iOS开发">iOS开发<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/iOS组件BuffKit/" title="iOS组件BuffKit">iOS组件BuffKit<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Objective-C/" title="Objective-C">Objective-C<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/iOS组件/" title="iOS组件">iOS组件<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BuffKit/" title="BuffKit">BuffKit<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JSPatch/" title="JSPatch">JSPatch<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/FlashHand" target="_blank" title="My github">My github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jianshu.com/users/3b98399e38d9/latest_articles" target="_blank" title="我的简书">我的简书</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> No need to retreat.YOLO:) <br/>
+			</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/FlashHand" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
+		
+		<a href="/about" target="_blank" title="R4L">R4L</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize();
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+      
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"r4l"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+});
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

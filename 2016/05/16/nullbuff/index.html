@@ -1,0 +1,462 @@
+
+ <!DOCTYPE HTML>
+<html lang="default">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>利用Method-Forwarding对null值的万金油处理 | R4L-Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="R4L">
+    
+
+    
+    <meta name="description" content="方法源码 https://github.com/FlashHand/BuffKit/tree/master/BuffKit/NullBuff 常常会从服务器拿到蛋疼的null值，说不定就导致闪退了，考虑到数据解析后的结果大不了是NSNumber，NSString，NSDictionary，NSArray这四种，我就写了个NSNull的Extension. 像这样：-(NSInteger)lengt">
+<meta name="keywords" content="Objective-C,iOS组件,BuffKit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用Method-Forwarding对null值的万金油处理">
+<meta property="og:url" content="http://r4l.xyz/2016/05/16/nullbuff/index.html">
+<meta property="og:site_name" content="R4L-Blog">
+<meta property="og:description" content="方法源码 https://github.com/FlashHand/BuffKit/tree/master/BuffKit/NullBuff 常常会从服务器拿到蛋疼的null值，说不定就导致闪退了，考虑到数据解析后的结果大不了是NSNumber，NSString，NSDictionary，NSArray这四种，我就写了个NSNull的Extension. 像这样：-(NSInteger)lengt">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-04-10T12:06:52.896Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用Method-Forwarding对null值的万金油处理">
+<meta name="twitter:description" content="方法源码 https://github.com/FlashHand/BuffKit/tree/master/BuffKit/NullBuff 常常会从服务器拿到蛋疼的null值，说不定就导致闪退了，考虑到数据解析后的结果大不了是NSNumber，NSString，NSDictionary，NSArray这四种，我就写了个NSNull的Extension. 像这样：-(NSInteger)lengt">
+
+    
+    <link rel="alternative" href="/atom.xml" title="R4L-Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon1.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="R4L-Blog" title="R4L-Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="R4L-Blog">R4L-Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/categories">分类</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<!-- <form class="search" action="http://r4l.xyz/" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 5156300261909359000 ><input type="text" name="q" size="30" placeholder="Search"><br>
+						</form> -->
+						<script type="text/javascript">(function(){document.write(unescape('%3Cdiv id="bdcs"%3E%3C/div%3E'));var bdcs = document.createElement('script');bdcs.type = 'text/javascript';bdcs.async = true;bdcs.src = 'http://znsv.baidu.com/customer_search/api/js?sid=5156300261909358396' + '&plate_url=' + encodeURIComponent(window.location.href) + '&t=' + Math.ceil(new Date()/3600000);var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(bdcs, s);})();</script>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/05/16/nullbuff/" title="利用Method-Forwarding对null值的万金油处理" itemprop="url">利用Method-Forwarding对null值的万金油处理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="R4L" target="_blank" itemprop="author">R4L</a>
+		
+  <p class="article-time">
+    <time datetime="2016-05-16T07:25:11.000Z" itemprop="datePublished"> Published 2016-05-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<p>方法源码</p>
+<p><a href="https://github.com/FlashHand/BuffKit/tree/master/BuffKit/NullBuff" target="_blank" rel="noopener">https://github.com/FlashHand/BuffKit/tree/master/BuffKit/NullBuff</a></p>
+<p>常常会从服务器拿到蛋疼的null值，说不定就导致闪退了，考虑到数据解析后的结果大不了是NSNumber，NSString，NSDictionary，NSArray这四种，我就写了个NSNull的Extension.</p>
+<p>像这样：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">-(NSInteger)length</span><br><span class="line">&#123;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br><span class="line">-(NSInteger)count</span><br><span class="line">&#123;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br><span class="line">//...</span><br><span class="line">添加了各种NSNumber，NSString，NSDictionary，NSArray里的对象方法。</span><br></pre></td></tr></table></figure></p>
+<p>这样可以足够覆盖实际需求了，但总归是有限的，细想了下决定用消息转发处理：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//</span><br><span class="line">// Created by BoWang on 16/5/16.</span><br><span class="line">// Copyright (c) 2016 BoWang. All rights reserved.</span><br><span class="line">//</span><br><span class="line"></span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line">//NSString,NSArray,NSDictionary</span><br><span class="line">@interface NSNull (NullBuff)</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface NullBuff : NSObject</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//</span><br><span class="line">// Created by BoWang on 16/5/16.</span><br><span class="line">// Copyright (c) 2016 BoWang. All rights reserved.</span><br><span class="line">//</span><br><span class="line"></span><br><span class="line">#import &quot;NullBuff.h&quot;</span><br><span class="line">#import &lt;objc/runtime.h&gt;</span><br><span class="line"></span><br><span class="line">@implementation NSNull (NullBuff)</span><br><span class="line">- (id)forwardingTargetForSelector:(SEL)aSelector &#123;</span><br><span class="line">    //函数说明：class_getInstanceMethod用来获取某个类的某个selector的Method结构体</span><br><span class="line">    //method_copyReturnType用来获取该方法的返回值类型，如果没有该方法则返回空。</span><br><span class="line">    //处理NSNumber,NSString,NSArray,NSDictionary，这里会遍历这四个类，当returnType为真得时候，说明当前遍历到的类含有该selector.</span><br><span class="line">    //由于OC良好的命名机制，同样的selector不会有不同类的返回值。</span><br><span class="line">    NSArray *supporttedTypes = @[@&quot;NSNumber&quot; , @&quot;NSString&quot; , @&quot;NSArray&quot; , @&quot;NSDictionary&quot;];</span><br><span class="line">    for (int i = 0; i &lt; 4; ++i) &#123;</span><br><span class="line">        Method m = class_getInstanceMethod(NSClassFromString(supporttedTypes[i]) , aSelector);</span><br><span class="line">        const char *returnType = method_copyReturnType(m);</span><br><span class="line">        if (returnType) &#123;</span><br><span class="line">            NSString *returnTypeStr = [[NSString alloc] initWithCString:returnType encoding:NSUTF8StringEncoding];</span><br><span class="line">            free(returnType);</span><br><span class="line">            switch (i) &#123;</span><br><span class="line">                case 0:</span><br><span class="line">                    return @(0);</span><br><span class="line">                    break;</span><br><span class="line">                case 1:</span><br><span class="line">                    return @&quot;&quot;;</span><br><span class="line">                    break;</span><br><span class="line">                case 2:</span><br><span class="line">                    return @[];</span><br><span class="line">                    break;</span><br><span class="line">                case 3:</span><br><span class="line">                    return @&#123;&#125;;</span><br><span class="line">                    break;</span><br><span class="line">                default:</span><br><span class="line">                    break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    return [super forwardingTargetForSelector:aSelector];</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation NullBuff &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>原理很简单：NSNull是继承于NSObject，而NSObject的</p>
+<ul>
+<li>(id)forwardingTargetForSelector:(SEL)aSelector 可以被重写。</li>
+</ul>
+<p>该方法的可以将消息转发给它的return value.</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/iOS组件BuffKit/">iOS组件BuffKit</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Objective-C/">Objective-C</a><a href="/tags/iOS组件/">iOS组件</a><a href="/tags/BuffKit/">BuffKit</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script>
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>
+
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2016/05/12/FrameBuff/"  title="UIView,CALayer,UIImage的尺寸或位置的快捷获取">
+ <strong>下一篇：</strong><br/> 
+ <span>UIView,CALayer,UIImage的尺寸或位置的快捷获取
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/05/16/nullbuff/" data-title="利用Method-Forwarding对null值的万金油处理" data-url="http://r4l.xyz/2016/05/16/nullbuff/"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/iOS开发/" title="iOS开发">iOS开发<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/iOS组件BuffKit/" title="iOS组件BuffKit">iOS组件BuffKit<sup>5</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Objective-C/" title="Objective-C">Objective-C<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/iOS组件/" title="iOS组件">iOS组件<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BuffKit/" title="BuffKit">BuffKit<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JSPatch/" title="JSPatch">JSPatch<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/FlashHand" target="_blank" title="My github">My github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jianshu.com/users/3b98399e38d9/latest_articles" target="_blank" title="我的简书">我的简书</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> No need to retreat.YOLO:) <br/>
+			</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/FlashHand" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
+		
+		<a href="/about" target="_blank" title="R4L">R4L</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize();
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+      
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"r4l"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+});
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
